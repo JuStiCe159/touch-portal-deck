@@ -2,8 +2,34 @@ import json
 import socket
 import struct
 import sys
+import TouchPortalAPI as TP
 from threading import Thread
 import time
+
+
+PLUGIN_ID = "TouchPortalDeck"
+
+TPClient = TP.Client(
+    pluginId = PLUGIN_ID,
+    sleepPeriod = 0.05,
+    autoClose = True,
+    checkPluginId = True,
+    maxWorkers = 4
+)
+
+
+@TPClient.on(TP.TYPES.onConnect)
+def onConnect(data):
+    print(f"Connected to TP v{data.get('tpVersionString', '?')}")
+
+@TPClient.on(TP.TYPES.onAction)
+def onAction(data):
+    if (action_data := data.get('data')):
+        print(f"Action received: {action_data}")
+
+def main():
+    TPClient.connect()
+    return 0
 
 class TouchPortalPlugin:
     def __init__(self):
@@ -49,22 +75,30 @@ class TouchPortalPlugin:
                 data = self.socket.recv(1024)
                 if data:
                     print(f"Received binary: {data.hex()}")
-                    # Send correct handshake response
-                    response = struct.pack('!BBBB', 0x02, 0x00, 0x02, 0x0a)
-                    self.socket.send(response)
-                    print("Sent handshake response")
-                    # Continue listening for commands
-                    continue
-                else:
-                    print("Connection reset - reconnecting")
-                    if self.running:
-                        self.connect()
-                    break
+                    # Handle initial handshake
+                    if data.hex() == "1503030002020a":
+                        response = struct.pack('!BBBB', 0x02, 0x00, 0x02, 0x0a)
+                        self.socket.send(response)
+                        print("Sent handshake response")
+                        # Send additional pairing info
+                        self.send({
+                            "type": "pair",
+                            "id": "TouchPortalDeck",
+                            "version": 1
+                        })
+                    else:
+                        # Handle regular messages
+                        try:
+                            message = json.loads(data.decode())
+                            print(f"Received message: {message}")
+                            self.handle_message(message)
+                        except:
+                            print(f"Raw data: {data.hex()}")
             except Exception as e:
                 print(f"Listen error: {str(e)}")
                 if self.running:
                     self.connect()
-                break
+                break    
     def handle_message(self, message):
         print(f"Handling message: {message}")
         
@@ -82,5 +116,5 @@ def main():
     plugin = TouchPortalPlugin()
     plugin.run()
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    sys.exit(main())

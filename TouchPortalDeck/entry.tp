@@ -1,0 +1,34 @@
+{
+    "sdk": 6,
+    "version": 1,
+    "name": "Touch Portal Deck",
+    "id": "TouchPortalDeck",
+    "configuration": {
+        "colorDark": "#23272A",
+        "colorLight": "#5865F2"
+    },
+    "plugin_start_cmd": "python main.py",
+    "categories": [
+        {
+            "id": "deck",
+            "name": "Deck Controls",
+            "actions": [
+                {
+                    "id": "deck_button",
+                    "name": "Deck Button",
+                    "prefix": "deck",
+                    "type": "communicate",
+                    "format": "Button {$buttonNumber$} pressed",
+                    "data": [
+                        {
+                            "id": "buttonNumber",
+                            "type": "number",
+                            "label": "Button",
+                            "default": "1"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
