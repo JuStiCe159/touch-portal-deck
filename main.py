@@ -47,25 +47,40 @@ class TouchPortalPlugin:
             
     def listen_loop(self):
         print("Starting listen loop...")
-        buffer_size = 1024  # Read in chunks
         while self.running:
             try:
-                header = self.socket.recv(4)
-                if header:
-                    size = struct.unpack('!L', header)[0]
-                    if size > 0 and size < buffer_size:
-                        data = self.socket.recv(size)
-                        try:
-                            message = json.loads(data.decode())
-                            print(f"Processed message: {message}")
-                            self.handle_message(message)
-                        except json.JSONDecodeError:
-                            print(f"Raw data received: {data.hex()}")
-                    else:
-                        print(f"Invalid message size: {size}")
-                        self.socket.recv(buffer_size)  # Clear buffer
+                # Read message length (4 bytes)
+                length_bytes = bytearray()
+                while len(length_bytes) < 4:
+                    byte = self.socket.recv(1)
+                    if byte:
+                        length_bytes.extend(byte)
+                
+                # Read actual message
+                message_bytes = bytearray()
+                message_length = struct.unpack('!L', length_bytes)[0]
+                
+                if 0 < message_length < 1024:  # Reasonable message size
+                    while len(message_bytes) < message_length:
+                        chunk = self.socket.recv(message_length - len(message_bytes))
+                        if chunk:
+                            message_bytes.extend(chunk)
+                    
+                    try:
+                        message = json.loads(message_bytes.decode())
+                        print(f"Received message: {message}")
+                        self.handle_message(message)
+                    except json.JSONDecodeError:
+                        print(f"Raw data: {message_bytes.hex()}")
+                else:
+                    print("Resetting connection - invalid message size")
+                    self.socket.close()
+                    self.connect()
+                    break
+                    
             except Exception as e:
-                print(f"Listen error: {str(e)}")
+                print(f"Connection reset: {str(e)}")
+                self.connect()
                 break    
     def handle_message(self, message):
         print(f"Handling message: {message}")
