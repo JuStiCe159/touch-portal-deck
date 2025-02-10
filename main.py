@@ -15,13 +15,14 @@ class TouchPortalPlugin:
     def connect(self):
         print("Attempting to connect to Touch Portal...")
         try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect(('192.168.0.26', 12135))
             print("Connected to Touch Portal")
             self.pair()
             self.start_listening()
         except Exception as e:
             print(f"Connection error: {str(e)}")
-            time.sleep(5)  # Wait 5 seconds before retry
+            time.sleep(5)  # Wait before retry
             self.connect()
             
     def pair(self):
