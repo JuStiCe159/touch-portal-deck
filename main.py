@@ -15,7 +15,7 @@ class TouchPortalPlugin:
     def connect(self):
         print("Attempting to connect to Touch Portal...")
         try:
-            self.socket.connect(('192.168.0.26', 12136))
+            self.socket.connect(('192.168.0.26', 12135))
             print("Connected to Touch Portal")
             self.pair()
             self.start_listening()
