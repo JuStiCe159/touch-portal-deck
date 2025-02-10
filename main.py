@@ -49,18 +49,20 @@ class TouchPortalPlugin:
         print("Starting listen loop...")
         while self.running:
             try:
-                data = self.socket.recv(8)
-                if data:
-                    print(f"Received data: {data}")
-                    size = struct.unpack('!L', data[:4])[0]
+                header = self.socket.recv(4)
+                if header:
+                    size = struct.unpack('!L', header)[0]
+                    print(f"Message size: {size} bytes")
                     data = self.socket.recv(size)
-                    message = json.loads(data)
-                    print(f"Processed message: {message}")
-                    self.handle_message(message)
+                    try:
+                        message = json.loads(data.decode())
+                        print(f"Processed message: {message}")
+                        self.handle_message(message)
+                    except json.JSONDecodeError:
+                        print(f"Raw data received: {data}")
             except Exception as e:
                 print(f"Listen error: {str(e)}")
-                break
-                
+                break                
     def handle_message(self, message):
         print(f"Handling message: {message}")
         if message.get('type') == 'action':
