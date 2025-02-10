@@ -49,18 +49,23 @@ class TouchPortalPlugin:
                 data = self.socket.recv(1024)
                 if data:
                     message = data.decode().strip()
-                    print(f"Received: {message}")
-                    try:
-                        parsed = json.loads(message)
-                        self.handle_message(parsed)
-                    except json.JSONDecodeError:
-                        print(f"Invalid JSON: {message}")
+                    if message:
+                        print(f"Received: {message}")
+                        try:
+                            parsed = json.loads(message)
+                            self.handle_message(parsed)
+                        except json.JSONDecodeError:
+                            print(f"Raw data: {data.hex()}")
+                else:
+                    print("Connection closed by server")
+                    if self.running:
+                        self.connect()
+                    break
             except Exception as e:
                 print(f"Listen error: {str(e)}")
                 if self.running:
                     self.connect()
-                break
-                
+                break                
     def handle_message(self, message):
         print(f"Handling message: {message}")
         
