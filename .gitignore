@@ -1,0 +1,9 @@
+dist
+build
+MANIFEST
+*.egg-info
+venv
+*.pyc
+*.bak
+*.log
+*.tpp

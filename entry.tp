@@ -1,0 +1,23 @@
+{
+  "sdk": 6,
+  "version": 1,
+  "name": "Touch Portal Deck",
+  "id": "TouchPortalDeck",
+  "actions": [
+    {
+      "id": "deck_button",
+      "name": "Deck Button",
+      "prefix": "deck",
+      "type": "communicate",
+      "format": "Button {$buttonNumber$} pressed",
+      "data": [
+        {
+          "id": "buttonNumber",
+          "type": "number",
+          "label": "Button",
+          "default": "1"
+        }
+      ]
+    }
+  ]
+}
